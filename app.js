@@ -70,7 +70,47 @@ function renderTodayDate() {
   }
 }
 
+const isTestWind = new URLSearchParams(window.location.search).get('test') === 'wind';
+
+async function loadWeather() {
+  const weatherBox = document.getElementById('weatherBox');
+  if (weatherBox) {
+    weatherBox.textContent = '날씨 정보를 불러오는 중...';
+  }
+
+  const regionNames = Object.keys(COORDINATES);
+  try {
+    const requests = regionNames.map(async (name) => {
+      const coords = COORDINATES[name];
+      const url = buildWeatherUrl(coords.lat, coords.lon);
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const parsed = parseWeatherData(data, isTestWind);
+      if (parsed) {
+        weatherByRegion[name] = parsed;
+      }
+    });
+
+    await Promise.all(requests);
+
+    if (weatherBox) {
+      weatherBox.textContent = isTestWind
+        ? '오늘 날씨 정보가 업데이트되었습니다. (시험 모드: 풍속 12m/s 적용)'
+        : '오늘 지역별 날씨 정보가 업데이트되었습니다.';
+    }
+  } catch (err) {
+    console.warn('날씨 정보를 불러오는 중 오류 발생:', err);
+    if (weatherBox) {
+      weatherBox.textContent = '날씨 정보를 불러오지 못했습니다. (오프라인/대기 모드)';
+    }
+  } finally {
+    renderTasks();
+  }
+}
+
 document.getElementById('taskForm').addEventListener('submit', addTask);
 loadTasks();
 renderTasks();
 renderTodayDate();
+loadWeather();
