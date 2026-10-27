@@ -40,6 +40,32 @@ function judge(kind, w) {
   return { level: 'ok', text: '진행' };
 }
 
+// 마크다운 표 및 보고서 문자열 생성 (DOM 의존성 없는 순수 함수)
+function buildMarkdownReport(tasks, weatherByRegion, dateStr) {
+  const lines = [];
+  if (dateStr) {
+    lines.push(`# 현장 일정 날씨 판단 (${dateStr})\n`);
+  }
+  lines.push('| 일정 | 지역 | 구분 | 담당 | 날씨 | 판단 |');
+  lines.push('|---|---|---|---|---|---|');
+
+  if (!tasks || tasks.length === 0) {
+    lines.push('| (등록된 일정이 없습니다) | - | - | - | - | - |');
+  } else {
+    for (const t of tasks) {
+      const w = weatherByRegion ? weatherByRegion[t.region] : null;
+      const weatherDesc = w ? `${w.tempMax}℃ · ${w.windMax}m/s · ${w.rainProb}%` : '-';
+      const r = judge(t.kind, w);
+      lines.push(`| ${t.title} | ${t.region} | ${t.kind} | ${t.owner} | ${weatherDesc} | ${r.text} |`);
+    }
+  }
+
+  lines.push('');
+  lines.push(`판단 기준: 풍속 ${RULES.wind}m/s 이상(고소 작업 중지 검토) · 강수확률 ${RULES.rain}% 이상(우천 주의) · 최고기온 ${RULES.heat}℃ 이상(폭염 휴식) (실내 일정 영향 없음)`);
+
+  return lines.join('\n');
+}
+
 if (typeof module !== 'undefined') {
-  module.exports = { RULES, COORDINATES, buildWeatherUrl, parseWeatherData, judge };
+  module.exports = { RULES, COORDINATES, buildWeatherUrl, parseWeatherData, judge, buildMarkdownReport };
 }

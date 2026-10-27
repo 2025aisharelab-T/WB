@@ -113,15 +113,33 @@ async function addTask(e) {
   }
 }
 
+function getTodayString() {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 function renderTodayDate() {
   const el = document.getElementById('currentDate');
   if (el) {
-    const d = new Date();
-    const yyyy = d.getFullYear();
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const dd = String(d.getDate()).padStart(2, '0');
-    el.textContent = `${yyyy}-${mm}-${dd}`;
+    el.textContent = getTodayString();
   }
+}
+
+function downloadMarkdownReport() {
+  const dateStr = getTodayString();
+  const mdContent = buildMarkdownReport(tasks, weatherByRegion, dateStr);
+  const blob = new Blob([mdContent], { type: 'text/markdown;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `현장일정_판단_${dateStr}.md`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 const isTestWind = new URLSearchParams(window.location.search).get('test') === 'wind';
@@ -164,6 +182,10 @@ async function loadWeather() {
 }
 
 document.getElementById('taskForm').addEventListener('submit', addTask);
+const downloadBtn = document.getElementById('downloadMdBtn');
+if (downloadBtn) {
+  downloadBtn.addEventListener('click', downloadMarkdownReport);
+}
 renderTodayDate();
 loadTasks();
 loadWeather();

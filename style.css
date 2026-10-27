@@ -32,9 +32,15 @@ header h1 {
     margin-bottom: 14px;
 }
 
-h2 {
-    font-size: 18px;
-    margin: 0 0 10px;
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.card-header h2 {
+    margin: 0;
 }
 
 table {
@@ -73,6 +79,18 @@ button {
     border: 0;
     border-radius: 4px;
     cursor: pointer;
+}
+
+.btn-sub {
+    background: #2f6b22;
+    color: #fff;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.btn-sub:hover {
+    background: #24531a;
 }
 
 .ok {
