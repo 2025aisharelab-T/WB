@@ -1,29 +1,44 @@
 // app.js – 화면 동작 (목록 그리기, 일정 추가)
 
-// 04 단원 : data/tasks.json 에서 일정 목록을 읽어옴
-let baseTasks = [];
+// 04 단원 : Supabase wx_tasks 에서 일정 목록을 읽고 저장함
 let tasks = [];
 let weatherByRegion = {};   // 03 단원에서 지역별 날씨를 넣음
 
+// Supabase 클라이언트 초기화 (비밀 키 절대 금지, config.js의 공개 anon 키만 사용)
+const supabaseClient = (typeof SUPABASE_URL !== 'undefined' && typeof SUPABASE_ANON_KEY !== 'undefined' && window.supabase)
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
+
 async function loadTasks() {
   const msgBox = document.getElementById('msgBox');
+  if (!supabaseClient || SUPABASE_URL.includes('YOUR_PROJECT_ID')) {
+    if (msgBox) {
+      msgBox.textContent = 'config.js에 Supabase 주소와 공개용 키를 입력해 주세요.';
+    }
+    tasks = [];
+    renderTasks();
+    return;
+  }
+
   try {
-    const res = await fetch('data/tasks.json');
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    baseTasks = await res.json();
-    if (msgBox && msgBox.textContent === '배포 주소로 열어 주세요') {
+    const { data, error } = await supabaseClient
+      .from('wx_tasks')
+      .select('id, title, region, kind, owner, created_at')
+      .order('id', { ascending: true });
+
+    if (error) throw error;
+    tasks = data || [];
+    if (msgBox && msgBox.textContent.includes('config.js')) {
       msgBox.textContent = '';
     }
   } catch (err) {
-    console.warn('tasks.json 읽기 실패 (로컬 파일 또는 네트워크):', err);
-    baseTasks = [];
+    console.warn('Supabase wx_tasks 읽기 실패:', err);
+    tasks = [];
     if (msgBox) {
-      msgBox.textContent = '배포 주소로 열어 주세요';
+      msgBox.textContent = '일정 목록을 불러오지 못했습니다. (' + (err.message || '네트워크 오류') + ')';
     }
   }
 
-  const saved = JSON.parse(localStorage.getItem('wx_added') || '[]');
-  tasks = baseTasks.concat(saved);
   renderTasks();
 }
 
@@ -40,7 +55,9 @@ function renderTasks() {
     td.colSpan = 6;
     td.style.textAlign = 'center';
     td.style.color = '#c62828';
-    td.textContent = '배포 주소로 열어 주세요';
+    td.textContent = (!supabaseClient || SUPABASE_URL.includes('YOUR_PROJECT_ID'))
+      ? 'config.js에 Supabase 접속 정보를 입력해 주세요'
+      : '등록된 일정이 없습니다';
     tr.appendChild(td);
     body.appendChild(tr);
     return;
@@ -71,11 +88,29 @@ async function addTask(e) {
     owner: document.getElementById('ownerInput').value.trim(),
   };
   if (!t.title || !t.owner) return;
-  const saved = JSON.parse(localStorage.getItem('wx_added') || '[]');
-  saved.push(t);
-  localStorage.setItem('wx_added', JSON.stringify(saved));
-  e.target.reset();
-  await loadTasks();
+
+  const msgBox = document.getElementById('msgBox');
+  if (!supabaseClient || SUPABASE_URL.includes('YOUR_PROJECT_ID')) {
+    if (msgBox) {
+      msgBox.textContent = 'config.js에 Supabase 주소와 공개용 키를 입력해 주세요.';
+    }
+    return;
+  }
+
+  try {
+    const { error } = await supabaseClient
+      .from('wx_tasks')
+      .insert([t]);
+    if (error) throw error;
+    e.target.reset();
+    if (msgBox) msgBox.textContent = '';
+    await loadTasks();
+  } catch (err) {
+    console.error('일정 추가 실패:', err);
+    if (msgBox) {
+      msgBox.textContent = '일정 추가 실패: ' + (err.message || '오류 발생');
+    }
+  }
 }
 
 function renderTodayDate() {

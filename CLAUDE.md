@@ -13,7 +13,9 @@
 - style.css  : 디자인
 - logic.js   : 판단 규칙만 (화면을 다루는 코드 금지)
 - app.js     : 화면 동작 (목록 그리기, 일정 추가)
-- data/tasks.json : 기본 일정 목록 (JSON)
+- config.js  : Supabase 연결 정보 (주소, 공개용 키)
+- setup.sql  : Supabase DB 테이블 생성 및 초기 데이터 SQL
+- data/tasks.json : 기본 가상 일정 목록 (참고용)
 - PRD.md · CLAUDE.md · README.md : 문서
 
 ## 작업 방식
@@ -24,6 +26,7 @@
 ## 보안 · 데이터 규칙
 - 가상 데이터만 사용한다. 실제 이름 · 연락처 · 기관 내부 자료를 넣지 않는다.
 - 사용자가 입력한 글자는 textContent 로 표시한다.
-- 비밀 키는 코드 · 채팅 · GitHub 에 넣지 않는다.
-- 일정 목록은 data/tasks.json에서 먼저 읽어오고, 화면에서 추가한 일정만 브라우저(localStorage)에 따로 저장한다.
-- 로컬에서 더블클릭(file://)하여 tasks.json을 읽지 못할 경우 화면에 '배포 주소로 열어 주세요'를 표시한다.
+- 비밀 키는 코드 · 채팅 · GitHub 에 넣지 않는다. (config.js에는 오직 공개용 anon 키만 사용하며, service_role 비밀 키는 절대 사용 금지)
+- 일정 목록은 Supabase 표(wx_tasks)에서 읽어오고, 새로 추가한 일정도 wx_tasks에 바로 저장한다.
+- 구분(kind: 야외·고소·실내)과 지역(region: 세종·대전·태안·보령) 값 규칙은 프론트엔드뿐 아니라 DB CHECK 제약조건으로도 검증한다.
+- config.js에 접속 정보가 없거나 연결되지 않을 경우 화면에 안내 메시지를 표시한다.
