@@ -13,6 +13,7 @@
 - style.css  : 디자인
 - logic.js   : 판단 규칙만 (화면을 다루는 코드 금지)
 - app.js     : 화면 동작 (목록 그리기, 일정 추가)
+- data/tasks.json : 기본 일정 목록 (JSON)
 - PRD.md · CLAUDE.md · README.md : 문서
 
 ## 작업 방식
@@ -24,3 +25,5 @@
 - 가상 데이터만 사용한다. 실제 이름 · 연락처 · 기관 내부 자료를 넣지 않는다.
 - 사용자가 입력한 글자는 textContent 로 표시한다.
 - 비밀 키는 코드 · 채팅 · GitHub 에 넣지 않는다.
+- 일정 목록은 data/tasks.json에서 먼저 읽어오고, 화면에서 추가한 일정만 브라우저(localStorage)에 따로 저장한다.
+- 로컬에서 더블클릭(file://)하여 tasks.json을 읽지 못할 경우 화면에 '배포 주소로 열어 주세요'를 표시한다.

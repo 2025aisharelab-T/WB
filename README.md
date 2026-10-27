@@ -13,6 +13,7 @@
 | style.css | 디자인 |
 | logic.js | 판단 규칙 |
 | app.js | 화면 동작 |
+| data/tasks.json | 기본 일정 데이터 (JSON) |
 | PRD.md | 무엇을 · 왜 만드는지 |
 | CLAUDE.md | AI가 지킬 작업 규칙 |
 | .gitignore | GitHub에 올리지 않을 파일 목록 |
