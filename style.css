@@ -93,6 +93,20 @@ button {
     background: #24531a;
 }
 
+.btn-del {
+    background: #e53935;
+    color: #fff;
+    padding: 3px 8px;
+    font-size: 12px;
+    border: 0;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-del:hover {
+    background: #c62828;
+}
+
 .ok {
     color: #2f6b22;
     font-weight: bold;

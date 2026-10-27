@@ -52,7 +52,7 @@ function renderTasks() {
   if (tasks.length === 0) {
     const tr = document.createElement('tr');
     const td = document.createElement('td');
-    td.colSpan = 6;
+    td.colSpan = 7;
     td.style.textAlign = 'center';
     td.style.color = '#c62828';
     td.textContent = (!supabaseClient || SUPABASE_URL.includes('YOUR_PROJECT_ID'))
@@ -75,7 +75,56 @@ function renderTasks() {
     td.textContent = r.text;
     td.className = r.level;
     tr.appendChild(td);
+
+    const tdAction = document.createElement('td');
+    const delBtn = document.createElement('button');
+    delBtn.textContent = '삭제';
+    delBtn.className = 'btn-del';
+    delBtn.type = 'button';
+    delBtn.addEventListener('click', () => deleteTask(t.id, t.title));
+    tdAction.appendChild(delBtn);
+    tr.appendChild(tdAction);
+
     body.appendChild(tr);
+  }
+}
+
+async function deleteTask(id, title) {
+  if (!confirm(`'${title}' 일정을 삭제하시겠습니까?`)) {
+    return;
+  }
+
+  const msgBox = document.getElementById('msgBox');
+  if (!supabaseClient || SUPABASE_URL.includes('YOUR_PROJECT_ID')) {
+    if (msgBox) {
+      msgBox.textContent = 'config.js에 Supabase 주소와 공개용 키를 입력해 주세요.';
+    }
+    return;
+  }
+
+  try {
+    const { data, error } = await supabaseClient
+      .from('wx_tasks')
+      .delete()
+      .eq('id', id)
+      .select();
+
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      if (msgBox) {
+        msgBox.textContent = '일정을 삭제하지 못했습니다. (Supabase RLS 삭제 정책을 확인해 주세요)';
+      }
+      return;
+    }
+
+    if (msgBox) msgBox.textContent = '';
+    await loadTasks();
+  } catch (err) {
+    console.error('일정 삭제 실패:', err);
+    if (msgBox) {
+      msgBox.textContent = '일정 삭제 실패: ' + (err.message || '오류 발생');
+    }
   }
 }
 

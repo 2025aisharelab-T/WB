@@ -13,7 +13,7 @@ create table if not exists wx_tasks (
   created_at timestamptz default now()
 );
 
--- 2. RLS(행 단위 보안) 활성화 및 누구나 읽기/추가 허용 (공개용 anon 키 접근용)
+-- 2. RLS(행 단위 보안) 활성화 및 누구나 읽기/추가/삭제 허용 (공개용 anon 키 접근용)
 alter table wx_tasks enable row level security;
 
 create policy "누구나 일정 읽기 가능"
@@ -25,6 +25,11 @@ create policy "누구나 일정 추가 가능"
   on wx_tasks for insert
   to anon, authenticated
   with check (true);
+
+create policy "누구나 일정 삭제 가능"
+  on wx_tasks for delete
+  to anon, authenticated
+  using (true);
 
 -- 3. 초기 가상 일정 6건 입력
 insert into wx_tasks (title, region, kind, owner) values
